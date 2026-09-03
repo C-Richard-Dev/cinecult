@@ -41,7 +41,7 @@ return [
 
     'tmdb' => [
         'url' => env('TMDB_URL', 'https://api.themoviedb.org/3'),
-        'api_key' => env('TMDB_API_KEY'),
+        'api_key' => env('TMDB_API_KEY', ''),
     ],
 
 ];
