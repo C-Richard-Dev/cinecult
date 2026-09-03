@@ -37,6 +37,11 @@ return [
 
     'archive' => [
         'url' => env('INTERNET_ARCHIVE_URL', 'https://archive.org'),
-    ]
+    ],
+
+    'tmdb' => [
+        'url' => env('TMDB_URL', 'https://api.themoviedb.org/3'),
+        'api_key' => env('TMDB_API_KEY'),
+    ],
 
 ];
