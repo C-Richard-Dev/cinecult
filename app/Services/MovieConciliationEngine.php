@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\MovieRepository;
 use App\Services\TmdbService;
 use App\Services\ArchiveService;
+use App\Services\Matcher;
 
 class MovieConciliationEngine
 {
@@ -12,6 +13,7 @@ class MovieConciliationEngine
         private ArchiveService $archiveService,
         private MovieRepository $movieRepository,
         private TmdbService $tmdbService,
+        private Matcher $matcher,
     ) {}
 
     public function run(): void
@@ -31,7 +33,14 @@ class MovieConciliationEngine
                         continue;
                     }
 
-                    $this->tmdbService->find($movie);
+                    $candidates = $this->tmdbService->find($movie);
+
+                    if ($candidates === []) {
+                        continue;
+                    }
+
+                    $movieConcilied = $this->matcher->match($movie, $candidates);
+
                 }
             }
 
