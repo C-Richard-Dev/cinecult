@@ -19,7 +19,7 @@ class ArchiveService
     {
         $datas = Http::baseUrl($this->baseUrl)
             ->get('/advancedsearch.php', [
-                'q' => 'collection:movies',
+                'q' => 'collection:feature_films_unsorted',
                 'fl' => 'identifier,title,description,year,date,language,creator,subject',
                 'rows' => $rows,
                 'page' => $page,

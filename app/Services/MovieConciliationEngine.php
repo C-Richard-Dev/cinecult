@@ -47,4 +47,27 @@ class MovieConciliationEngine
             $page++;
         } while (count($movies) === 100);
     }
+
+    // para debug
+    public function runTest(): void
+    {
+        $movies = $this->archiveService->listMovies(
+            page: 1,
+            rows: 10
+        );
+
+        foreach ($movies as $movie) {
+
+            if ($this->movieRepository->findByArchiveIdentifier($movie->identifier)) {
+                continue;
+            }
+
+            $candidates = $this->tmdbService->find($movie);
+
+            dump([
+                'archive' => $movie,
+                'candidates' => $candidates,
+            ]);
+        }
+    }
 }
