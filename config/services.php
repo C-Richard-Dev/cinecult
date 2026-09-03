@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'archive' => [
+        'url' => env('INTERNET_ARCHIVE_URL', 'https://archive.org'),
+    ]
+
 ];
