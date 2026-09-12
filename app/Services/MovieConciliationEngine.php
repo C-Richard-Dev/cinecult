@@ -45,11 +45,15 @@ class MovieConciliationEngine
 
                     foreach ($scoredCandidates as $scoredCandidate) {
                         if ($scoredCandidate->score === 100) {
-                            // cria o filme no repositorio (conciliado)
+                            $videoFileName = $this->archiveService->getVideoFileName($movie->identifier);
+                            
+                            if (!$videoFileName) {
+                                continue;
+                            }
+
+                            $movie->videoFileName = $videoFileName;
                             $this->createMovie->execute($movie, $scoredCandidate->candidate);
 
-
-                            // break para sair do loop de candidatos, pois já encontramos uma correspondência perfeita
                             break;
                         } else if($scoredCandidate->score >= 80) { 
                             // cria um candidato ao filme no banco

@@ -40,7 +40,6 @@ class ArchiveService
                 subject: isset($movie['subject'])
                     ? (array) $movie['subject']
                     : null,
-                videoFileName: $this->getVideoFileName($movie['identifier']),
             ),
             $datas['response']['docs'] ?? []
         );

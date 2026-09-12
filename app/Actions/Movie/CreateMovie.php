@@ -5,32 +5,40 @@ namespace App\Actions\Movie;
 use App\DTOs\ArchiveMovieDto;
 use App\DTOs\TmdbMovieDto;
 use App\Models\Movie;
+use App\Actions\Movie\SyncCategoriesToMovie;
 
 class CreateMovie
 {
+    private SyncCategoriesToMovie $syncCategoriesToMovie;
+
+    public function __construct(SyncCategoriesToMovie $syncCategoriesToMovie)
+    {
+        $this->syncCategoriesToMovie = $syncCategoriesToMovie;
+    }
+
     public function execute(
         ArchiveMovieDto $archiveMovie,
         TmdbMovieDto $tmdbMovie
     ): Movie {
 
-        $category = $this->resolveCategory($tmdbMovie);
+        $movie = Movie::create([
+                'archive_identifier' => $archiveMovie->identifier,
+                'tmdb_id' => $tmdbMovie->id,
 
-        return Movie::create([
-            'category' => 1,
+                'title' => $tmdbMovie->title,
+                'original_title' => $tmdbMovie->originalTitle,
+                'overview' => $tmdbMovie->overview,
 
-            'archive_identifier' => $archiveMovie->identifier,
-            'tmdb_id' => $tmdbMovie->id,
+                'release_date' => $tmdbMovie->releaseDate,
 
-            'title' => $tmdbMovie->title,
-            'original_title' => $tmdbMovie->originalTitle,
-            'overview' => $tmdbMovie->overview,
+                'poster_path' => $tmdbMovie->posterPath,
+                'backdrop_path' => $tmdbMovie->backdropPath,
 
-            'release_date' => $tmdbMovie->releaseDate,
+                'video_file_name' => $archiveMovie->videoFileName,
+            ]);
 
-            'poster_path' => $tmdbMovie->posterPath,
-            'backdrop_path' => $tmdbMovie->backdropPath,
+        $this->syncCategoriesToMovie->execute($movie, $tmdbMovie->genreIds);
 
-            'video_file_name' => $archiveMovie->videoFileName,
-        ]);
+        return $movie;
     }
 }
