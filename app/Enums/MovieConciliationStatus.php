@@ -4,8 +4,6 @@ namespace App\Enums;
 
 enum MovieConciliationStatus: string
 {
-    case Pending = 'pending';
-    case Running = 'running';
-    case Completed = 'completed';
-    case Failed = 'failed';
+    case AUTOMATIC = 'automatic';
+    case MANUAL = 'manual';
 }
