@@ -40,8 +40,25 @@ class ArchiveService
                 subject: isset($movie['subject'])
                     ? (array) $movie['subject']
                     : null,
+                videoFileName: $this->getVideoFileName($movie['identifier']),
             ),
             $datas['response']['docs'] ?? []
         );
+    }
+
+    public function getVideoFileName(string $identifier): ?string
+    {
+        $data = Http::baseUrl($this->baseUrl)
+            ->get("/metadata/{$identifier}")
+            ->throw()
+            ->json();
+
+        foreach ($data['files'] ?? [] as $file) {
+            if (($file['format'] ?? null) === 'MPEG4') {
+                return $file['name'];
+            }
+        }
+
+        return null;
     }
 }

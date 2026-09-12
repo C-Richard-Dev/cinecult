@@ -6,6 +6,7 @@ use App\Repositories\MovieRepository;
 use App\Services\TmdbService;
 use App\Services\ArchiveService;
 use App\Services\ScorerService;
+use App\Actions\Movie\CreateMovie;
 
 class MovieConciliationEngine
 {
@@ -14,6 +15,7 @@ class MovieConciliationEngine
         private MovieRepository $movieRepository,
         private TmdbService $tmdbService,
         private ScorerService $scorerService,
+        private CreateMovie $createMovie,
     ) {}
 
     public function run(): void
@@ -39,15 +41,17 @@ class MovieConciliationEngine
                         continue;
                     }
 
-                    $candidatesScored = $this->scorerService->score($movie, $candidates);
+                    $scoredCandidates = $this->scorerService->score($movie, $candidates);
 
-                    foreach ($candidatesScored as $candidate) {
-
-                        if ($candidate['score'] === 100) {
+                    foreach ($scoredCandidates as $scoredCandidate) {
+                        if ($scoredCandidate->score === 100) {
                             // cria o filme no repositorio (conciliado)
+                            $this->createMovie->execute($movie, $scoredCandidate->candidate);
+
+
                             // break para sair do loop de candidatos, pois já encontramos uma correspondência perfeita
                             break;
-                        } else if($candidate['score'] >= 80) { 
+                        } else if($scoredCandidate->score >= 80) { 
                             // cria um candidato ao filme no banco
                         }
 

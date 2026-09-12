@@ -13,6 +13,7 @@ class ArchiveMovieDto
         public ?string $language,
         public ?string $creator,
         public ?array $subject,
+        public ?string $videoFileName
     ) {}
     
 }
