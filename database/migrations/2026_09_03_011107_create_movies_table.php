@@ -14,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('movies', function (Blueprint $table) {
             $table->id();
-            $table->string('conciliation_status', 20)->default(MovieConciliationStatus::Pending->value);
+            $table->uuid()->unique();
+
             $table->integer('category')->default(MovieCategory::Action->value);
             $table->string('archive_identifier')->unique();
             $table->integer('tmdb_id')->unique();
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('runtime')->nullable();
             $table->string('poster_path')->nullable();
             $table->string('backdrop_path')->nullable();
+            $table->string('video_file_name');
             $table->timestamps();
         });
     }

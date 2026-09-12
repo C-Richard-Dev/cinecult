@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
     'runtime',
     'poster_path',
     'backdrop_path',
+    'video_file_name',
 ])]
 class Movie extends Model
 {
