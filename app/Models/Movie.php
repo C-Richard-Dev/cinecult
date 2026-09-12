@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Enums\MovieCategory;
-use App\Enums\MovieConciliationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
+    'uuid',
     'conciliation_status',
-    'category',
     'archive_identifier',
     'tmdb_id',
     'title',
@@ -23,13 +23,28 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Movie extends Model
 {
+    protected static function booted(): void
+    {
+        static::creating(function (self $movie): void {
+            $movie->uuid ??= (string) Str::uuid();
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     protected function casts(): array
     {
         return [
-            'conciliation_status' => MovieConciliationStatus::class,
-            'category' => MovieCategory::class,
             'release_date' => 'date',
             'runtime' => 'integer',
         ];
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_movies');
     }
 }

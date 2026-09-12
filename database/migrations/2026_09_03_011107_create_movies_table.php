@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Enums\{MovieConciliationStatus, MovieCategory};
 
 return new class extends Migration
 {
@@ -14,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('movies', function (Blueprint $table) {
             $table->id();
-            $table->uuid()->unique();
+            $table->uuid('uuid')->unique();
 
-            $table->integer('category')->default(MovieCategory::Action->value);
             $table->string('archive_identifier')->unique();
             $table->integer('tmdb_id')->unique();
             $table->string('title');
