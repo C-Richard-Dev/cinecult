@@ -5,6 +5,12 @@ namespace App\Services;
 use App\DTOs\{ArchiveMovieDto, CandidateScoredDto};
 use Illuminate\Support\Facades\Http;
 
+/**
+ * O objetivo é avaliar somente características pontuais dos filmes, são eles:
+ * - Título
+ * - Ano
+ * - Descrição  
+ */
 class ScorerService
 {
 
