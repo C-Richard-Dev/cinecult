@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\DTOs\{ArchiveMovieDto, CandidateScoredDto};
+use App\DTOs\ArchiveMovieDto;
+use App\DTOs\CandidateScoreDto;
 
 /**
  * Avalia candidatos do TMDB com base em:
@@ -37,13 +38,13 @@ class ScorerService
 
             $score = $titleScore + $yearScore + $descriptionScore;
 
-            $candidatesScored[] = new CandidateScoredDto(
+            $candidatesScored[] = new CandidateScoreDto(
                 candidate: $candidate,
-                score: $score
+                score: $score,
             );
         }
 
-        usort($candidatesScored, fn (CandidateScoredDto $a, CandidateScoredDto $b) => $b->score <=> $a->score);
+        usort($candidatesScored, fn (CandidateScoreDto $a, CandidateScoreDto $b) => $b->score <=> $a->score);
 
         return $candidatesScored;
     }
@@ -53,8 +54,9 @@ class ScorerService
      *
      * Retorna de 0 a 50 pontos.
      */
-    private function compareTitle(string $titleA, string $titleB): int
+    private function compareTitle(string $titleA, ?string $titleB): int
     {
+        $titleB ??= '';
         $titleA = $this->normalizeText($titleA);
         $titleB = $this->normalizeText($titleB);
 

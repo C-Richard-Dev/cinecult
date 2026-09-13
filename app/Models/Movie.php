@@ -2,27 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
-#[Fillable([
-    'uuid',
-    'conciliation_status',
-    'archive_identifier',
-    'tmdb_id',
-    'title',
-    'original_title',
-    'overview',
-    'release_date',
-    'runtime',
-    'poster_path',
-    'backdrop_path',
-    'video_file_name',
-])]
 class Movie extends Model
 {
+    protected $fillable = [
+        'uuid',
+        'conciliation_status',
+        'archive_identifier',
+        'tmdb_id',
+        'title',
+        'original_title',
+        'overview',
+        'release_date',
+        'runtime',
+        'poster_path',
+        'backdrop_path',
+        'video_file_name',
+    ];
+
     protected static function booted(): void
     {
         static::creating(function (self $movie): void {
