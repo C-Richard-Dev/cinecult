@@ -6,7 +6,8 @@ use App\Repositories\MovieRepository;
 use App\Services\TmdbService;
 use App\Services\ArchiveService;
 use App\Services\ScorerService;
-use App\Actions\Movie\CreateMovie;
+use App\Actions\Movie\ConciliateAutomaticallyMovie;
+use App\Actions\Movie\CreatePendingMovie;
 
 class MovieConciliationEngine
 {
@@ -15,7 +16,8 @@ class MovieConciliationEngine
         private MovieRepository $movieRepository,
         private TmdbService $tmdbService,
         private ScorerService $scorerService,
-        private CreateMovie $createMovie,
+        private ConciliateAutomaticallyMovie $conciliateAutomaticallyMovie,
+        private CreatePendingMovie $createPendingMovie,
     ) {}
 
     public function run(): void
@@ -41,6 +43,8 @@ class MovieConciliationEngine
                         continue;
                     }
 
+                    $pendingMovie = $this->createPendingMovie->execute($movie);
+
                     $scoredCandidates = $this->scorerService->score($movie, $candidates);
 
                     foreach ($scoredCandidates as $scoredCandidate) {
@@ -52,7 +56,7 @@ class MovieConciliationEngine
                             }
 
                             $movie->videoFileName = $videoFileName;
-                            $this->createMovie->execute($movie, $scoredCandidate->candidate);
+                            $this->conciliateAutomaticallyMovie->execute($pendingMovie->id, $movie, $scoredCandidate->candidate);
 
                             break;
                         } else if($scoredCandidate->score >= 80) { 
