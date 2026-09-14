@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
+#[Fillable(['name', 'uuid'])]
 class Category extends Model
 {
-    protected $fillable = [
-        'uuid',
-        'name',
-    ];
-
     protected static function booted(): void
     {
         static::creating(function (self $category): void {

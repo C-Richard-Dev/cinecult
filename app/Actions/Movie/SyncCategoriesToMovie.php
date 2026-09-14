@@ -2,65 +2,71 @@
 
 namespace App\Actions\Movie;
 
-use App\Enums\MovieCategory;
 use App\Models\{Category, Movie};
+use App\Models\Pivot\CategoryMovie;
 
 class SyncCategoriesToMovie
 {
     public function execute(Movie $movie, array $categoryIds): void
     {
-        $categoryIds = array_values(array_unique(array_filter($categoryIds, 'is_int')));
-
-        if ($categoryIds === []) {
-            return;
-        }
-
-        $categories = collect();
-
         foreach ($categoryIds as $categoryId) {
             $categoryName = $this->matchCategoryId($categoryId);
+            $category = Category::where('name', $categoryName)->first();
 
-            if ($categoryName === '') {
+            if (!$category) {
                 continue;
             }
 
-            $categories->push(
-                Category::firstOrCreate(['name' => $categoryName])
-            );
+            CategoryMovie::create([
+                'movie_id' => $movie->id,
+                'category_id' => $category->id,
+            ]);
         }
-
-        if ($categories->isEmpty()) {
-            return;
-        }
-
-        $movie->categories()->syncWithoutDetaching(
-            $categories->pluck('id')->all()
-        );
     }
 
     private function matchCategoryId(int $categoryId): string
     {
-        return match ($categoryId) {
-            MovieCategory::Action->value => 'Action',
-            MovieCategory::Adventure->value => 'Adventure',
-            MovieCategory::Animation->value => 'Animation',
-            MovieCategory::Comedy->value => 'Comedy',
-            MovieCategory::Crime->value => 'Crime',
-            MovieCategory::Documentary->value => 'Documentary',
-            MovieCategory::Drama->value => 'Drama',
-            MovieCategory::Family->value => 'Family',
-            MovieCategory::Fantasy->value => 'Fantasy',
-            MovieCategory::History->value => 'History',
-            MovieCategory::Horror->value => 'Horror',
-            MovieCategory::Music->value => 'Music',
-            MovieCategory::Mystery->value => 'Mystery',
-            MovieCategory::Romance->value => 'Romance',
-            MovieCategory::ScienceFiction->value => 'Science Fiction',
-            MovieCategory::TVMovie->value => 'TV Movie',
-            MovieCategory::Thriller->value => 'Thriller',
-            MovieCategory::War->value => 'War',
-            MovieCategory::Western->value => 'Western',
-            default => '',
-        };
+        switch ($categoryId) {
+            case 28:
+                return 'Action';
+            case 12:
+                return 'Adventure';
+            case 16:
+                return 'Animation';
+            case 35:
+                return 'Comedy';
+            case 80:
+                return 'Crime';
+            case 99:
+                return 'Documentary';
+            case 18:
+                return 'Drama';
+            case 10751:
+                return 'Family';
+            case 14:
+                return 'Fantasy';
+            case 36:
+                return 'History';
+            case 27:
+                return 'Horror';
+            case 10402:
+                return 'Music';
+            case 9648:
+                return 'Mystery';
+            case 10749:
+                return 'Romance';
+            case 878:
+                return 'Science Fiction';
+            case 10770:
+                return 'TV Movie';
+            case 53:
+                return 'Thriller';
+            case 10752:
+                return 'War';
+            case 37:
+                return 'Western';
+            default:
+                return '';
+        }
     }
 }

@@ -2,25 +2,20 @@
 
 namespace App\Services;
 
-use App\Repositories\{ArchiveRepository, MovieRepository};
+use App\Repositories\MovieRepository;
 use App\Services\TmdbService;
 use App\Services\ArchiveService;
 use App\Services\ScorerService;
 use App\Actions\Movie\CreateMovie;
-use App\Actions\ArchiveMovie\CreateArchiveMovie;
-use App\Models\ArchiveMovie;
-use App\DTOs\{CandidateScoreDto, ArchiveMovieDto};
 
 class MovieConciliationEngine
 {
     public function __construct(
         private ArchiveService $archiveService,
         private MovieRepository $movieRepository,
-        private ArchiveRepository $archiveRepository,
         private TmdbService $tmdbService,
         private ScorerService $scorerService,
         private CreateMovie $createMovie,
-        private CreateArchiveMovie $createArchiveMovieAction,
     ) {}
 
     public function run(): void
@@ -36,7 +31,7 @@ class MovieConciliationEngine
 
             foreach (array_chunk($movies, 100) as $moviesChunk) {
                 foreach ($moviesChunk as $movie) {
-                    if (!$this->validateMovieInApp($movie->identifier)) {
+                    if ($this->movieRepository->findByArchiveIdentifier($movie->identifier)) {
                         continue;
                     }
 
@@ -46,19 +41,26 @@ class MovieConciliationEngine
                         continue;
                     }
 
-                    $bestCandidate = $this->getTheBestCandidate($movie, $candidates);
+                    $scoredCandidates = $this->scorerService->score($movie, $candidates);
 
-                    if ($bestCandidate->score >= 80) {
-                        $videoFileName = $this->archiveService->getVideoFileName($movie->identifier);
+                    foreach ($scoredCandidates as $scoredCandidate) {
+                        if ($scoredCandidate->score === 100) {
+                            $videoFileName = $this->archiveService->getVideoFileName($movie->identifier);
+                            
+                            if (!$videoFileName) {
+                                continue;
+                            }
 
-                        if (!$videoFileName) {
-                            continue;
+                            $movie->videoFileName = $videoFileName;
+                            $this->createMovie->execute($movie, $scoredCandidate->candidate);
+
+                            break;
+                        } else if($scoredCandidate->score >= 80) { 
+                            // cria um candidato ao filme no banco
                         }
-                        $movie->videoFileName = $videoFileName;
-                        $this->createMovie->execute($movie, $bestCandidate);
-                    } else {
-                        $this->createArchiveMovieAction->execute($movie);
+
                     }
+
                 }
             }
              
@@ -87,24 +89,5 @@ class MovieConciliationEngine
                 'candidates' => $candidates,
             ]);
         }
-    }
-
-    private function validateMovieInApp(string $identifier): bool
-    {
-        if ($this->movieRepository->findByArchiveIdentifier($identifier)) {
-            return false;
-        }
-
-        if ($this->archiveRepository->findByIdentifier($identifier)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function getTheBestCandidate(ArchiveMovieDto $movie, array $candidates): ?CandidateScoreDto
-    {
-        $scoredCandidates = $this->scorerService->score($movie, $candidates);
-        return $scoredCandidates[0] ?? null;
     }
 }
