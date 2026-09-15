@@ -13,6 +13,7 @@ class CreatePendingMovie
         return Movie::create([
             'archive_identifier' => $movie->identifier,
             'title' => $movie->title,
+            'overview' => $movie->description,
             'reconciliation_status' => MovieReconciliationStatus::PENDING,
         ]);
     }

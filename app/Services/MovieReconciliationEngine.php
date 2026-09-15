@@ -48,7 +48,8 @@ class MovieReconciliationEngine
                     $scoredCandidates = $this->scorerService->score($movie, $candidates);
 
                     foreach ($scoredCandidates as $scoredCandidate) {
-                        if ($scoredCandidate->level === CompatibilityLevel::HIGH) {
+                        if ($scoredCandidate->level === CompatibilityLevel::HIGH
+                            || $scoredCandidate->level === CompatibilityLevel::GOOD) {
                             $videoFileName = $this->archiveService->getVideoFileName($movie->identifier);
 
                             if (! $videoFileName) {
