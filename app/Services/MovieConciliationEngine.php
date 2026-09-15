@@ -8,6 +8,7 @@ use App\Services\ArchiveService;
 use App\Services\ScorerService;
 use App\Actions\Movie\ConciliateAutomaticallyMovie;
 use App\Actions\Movie\CreatePendingMovie;
+use App\Enums\CompatibilityLevel;
 
 class MovieConciliationEngine
 {
@@ -48,7 +49,7 @@ class MovieConciliationEngine
                     $scoredCandidates = $this->scorerService->score($movie, $candidates);
 
                     foreach ($scoredCandidates as $scoredCandidate) {
-                        if ($scoredCandidate->score === 100) {
+                        if ($scoredCandidate->level === CompatibilityLevel::HIGH) {
                             $videoFileName = $this->archiveService->getVideoFileName($movie->identifier);
                             
                             if (!$videoFileName) {
@@ -59,8 +60,8 @@ class MovieConciliationEngine
                             $this->conciliateAutomaticallyMovie->execute($pendingMovie->id, $movie, $scoredCandidate->candidate);
 
                             break;
-                        } else if($scoredCandidate->score >= 80) { 
-                            // cria um candidato ao filme no banco
+                        } else { 
+                            // TODO: cria um candidato ao filme no banco
                         }
 
                     }

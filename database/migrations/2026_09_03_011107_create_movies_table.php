@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->string('archive_identifier')->unique();
             $table->integer('tmdb_id')->unique()->nullable();
-            $table->string('conciliation_status', 50)->default(MovieConciliationStatus::AUTOMATIC->value);
+            $table->string('conciliation_status', 50)->default(MovieConciliationStatus::PENDING->value);
             $table->string('title');
             $table->string('original_title')->nullable();
             $table->text('overview')->nullable();

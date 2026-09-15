@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\{ArchiveMovieDto, CandidateScoredDto};
+use App\Enums\CompatibilityLevel;
 
 /**
  * Avalia candidatos do TMDB com base em:
@@ -36,9 +37,11 @@ class ScorerService
             );
 
             $score = $titleScore + $yearScore + $descriptionScore;
+            $compatibilityLevel = $this->getCompatibilityLevel($score);
 
             $candidatesScored[] = new CandidateScoredDto(
                 candidate: $candidate,
+                level: $compatibilityLevel,
                 score: $score
             );
         }
@@ -130,5 +133,15 @@ class ScorerService
         $text = preg_replace('/\s+/', ' ', $text);
 
         return trim($text);
+    }
+
+    private function getCompatibilityLevel(int $score): CompatibilityLevel
+    {
+        return match (true) {
+            $score >= 100 => CompatibilityLevel::HIGH,
+            $score >= 80 => CompatibilityLevel::GOOD,
+            $score >= 60 => CompatibilityLevel::MEDIUM,
+            default => CompatibilityLevel::LOW,
+        };
     }
 }
