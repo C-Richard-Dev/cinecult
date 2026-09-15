@@ -4,6 +4,7 @@ namespace App\Models\Pivot;
 
 use App\Models\Category;
 use App\Models\Movie;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

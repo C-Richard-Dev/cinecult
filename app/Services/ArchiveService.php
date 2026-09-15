@@ -48,8 +48,8 @@ class ArchiveService
                 description: $movie['description'] ?? null,
                 year: isset($movie['year']) ? (int) $movie['year'] : null,
                 date: $movie['date'] ?? null,
-                language: $movie['language'] ?? null,
-                creator: $movie['creator'] ?? null,
+                language: $this->normalizeToString($movie['language'] ?? null),
+                creator: $this->normalizeToString($movie['creator'] ?? null),
                 subject: isset($movie['subject'])
                     ? (array) $movie['subject']
                     : null,
@@ -84,5 +84,21 @@ class ArchiveService
     private function throttle(): void
     {
         Sleep::for($this->requestDelayMs)->milliseconds();
+    }
+
+    /**
+     * The Internet Archive API returns some fields (e.g. creator, language)
+     * as a single string or as an array of strings when a movie has
+     * multiple values. Normalize either shape into a single string.
+     *
+     * @param  array<int, string>|string|null  $value
+     */
+    private function normalizeToString(array|string|null $value): ?string
+    {
+        if (is_array($value)) {
+            return $value === [] ? null : implode(', ', $value);
+        }
+
+        return $value;
     }
 }
