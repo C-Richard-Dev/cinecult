@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('movies:reconcile {--sync : Run the reconciliation job synchronously}')]
+#[Signature('movies:reconcile')]
 #[Description('Reconcile movies from Internet Archive with TMDB')]
 class ReconcileMovies extends Command
 {
@@ -16,12 +16,7 @@ class ReconcileMovies extends Command
      */
     public function handle(): void
     {
-        if ($this->option('sync')) {
-            $this->components->info('Running movie reconciliation synchronously...');
-            ReconcileMoviesJob::dispatchSync();
-        } else {
-            ReconcileMoviesJob::dispatch();
-            $this->components->info('Movie reconciliation job dispatched successfully.');
-        }
+        ReconcileMoviesJob::dispatch();
+        $this->components->info('Movie reconciliation job dispatched successfully.');
     }
 }
