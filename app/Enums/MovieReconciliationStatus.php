@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum MovieConciliationStatus: string
+enum MovieReconciliationStatus: string
 {
     case AUTOMATIC = 'automatic';
     case MANUAL = 'manual';

@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Services\MovieConciliationEngine;
+use App\Services\MovieReconciliationEngine;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ConciliationMoviesJob implements ShouldQueue
+class ReconcileMoviesJob implements ShouldQueue
 {
     use Queueable;
 
@@ -18,8 +18,8 @@ class ConciliationMoviesJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(MovieConciliationEngine $movieConciliationEngine): void
+    public function handle(MovieReconciliationEngine $movieReconciliationEngine): void
     {
-        $movieConciliationEngine->run();
+        $movieReconciliationEngine->run();
     }
 }

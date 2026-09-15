@@ -2,9 +2,9 @@
 
 namespace App\Actions\Movie;
 
-use App\Models\Movie;
 use App\DTOs\ArchiveMovieDto;
-use App\Enums\MovieConciliationStatus; 
+use App\Enums\MovieReconciliationStatus;
+use App\Models\Movie;
 
 class CreatePendingMovie
 {
@@ -13,7 +13,7 @@ class CreatePendingMovie
         return Movie::create([
             'archive_identifier' => $movie->identifier,
             'title' => $movie->title,
-            'conciliation_status' => MovieConciliationStatus::PENDING,
+            'reconciliation_status' => MovieReconciliationStatus::PENDING,
         ]);
     }
 }

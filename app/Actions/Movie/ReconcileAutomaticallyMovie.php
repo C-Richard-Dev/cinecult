@@ -4,10 +4,10 @@ namespace App\Actions\Movie;
 
 use App\DTOs\ArchiveMovieDto;
 use App\DTOs\TmdbMovieDto;
-use App\Enums\MovieConciliationStatus;
+use App\Enums\MovieReconciliationStatus;
 use App\Models\Movie;
 
-class ConciliateAutomaticallyMovie
+class ReconcileAutomaticallyMovie
 {
     private SyncCategoriesToMovie $syncCategoriesToMovie;
 
@@ -24,14 +24,14 @@ class ConciliateAutomaticallyMovie
         $movie = Movie::findOrFail($movieId);
         $movie->update([
             'tmdb_id' => $tmdbMovie->id,
-            'conciliation_status' => MovieConciliationStatus::AUTOMATIC,
+            'reconciliation_status' => MovieReconciliationStatus::AUTOMATIC,
             'original_title' => $tmdbMovie->originalTitle,
             'overview' => $tmdbMovie->overview,
             'release_date' => $tmdbMovie->releaseDate,
             'poster_path' => $tmdbMovie->posterPath,
             'backdrop_path' => $tmdbMovie->backdropPath,
             'video_file_name' => $archiveMovie->videoFileName,
-            'conciliation_date' => now(),
+            'reconciliation_date' => now(),
         ]);
 
         $this->syncCategoriesToMovie->execute($movie, $tmdbMovie->genreIds);

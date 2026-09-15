@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\MovieReconciliationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
-use App\Enums\MovieConciliationStatus;
 
 #[Fillable([
     'uuid',
-    'conciliation_status',
+    'reconciliation_status',
     'archive_identifier',
     'tmdb_id',
     'title',
@@ -20,7 +20,7 @@ use App\Enums\MovieConciliationStatus;
     'poster_path',
     'backdrop_path',
     'video_file_name',
-    'conciliation_date',
+    'reconciliation_date',
 ])]
 class Movie extends Model
 {
@@ -39,9 +39,9 @@ class Movie extends Model
     protected function casts(): array
     {
         return [
-            'conciliation_status' => MovieConciliationStatus::class,
+            'reconciliation_status' => MovieReconciliationStatus::class,
             'release_date' => 'date',
-            'conciliation_date' => 'date',
+            'reconciliation_date' => 'date',
         ];
     }
 
