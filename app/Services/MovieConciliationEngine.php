@@ -8,6 +8,7 @@ use App\Services\ArchiveService;
 use App\Services\ScorerService;
 use App\Actions\Movie\ConciliateAutomaticallyMovie;
 use App\Actions\Movie\CreatePendingMovie;
+use App\Actions\Candidate\CreateCandidate;
 use App\Enums\CompatibilityLevel;
 
 class MovieConciliationEngine
@@ -19,6 +20,7 @@ class MovieConciliationEngine
         private ScorerService $scorerService,
         private ConciliateAutomaticallyMovie $conciliateAutomaticallyMovie,
         private CreatePendingMovie $createPendingMovie,
+        private CreateCandidate $createCandidate,
     ) {}
 
     public function run(): void
@@ -61,38 +63,13 @@ class MovieConciliationEngine
 
                             break;
                         } else { 
-                            // TODO: cria um candidato ao filme no banco
+                            $this->createCandidate->execute($scoredCandidate->candidate, $scoredCandidate->level, $pendingMovie->id);
                         }
-
                     }
-
                 }
             }
              
             $page++;
         } while (count($movies) === 100);
-    }
-
-    // para debug
-    public function runTest(): void
-    {
-        $movies = $this->archiveService->listMovies(
-            page: 1,
-            rows: 10
-        );
-
-        foreach ($movies as $movie) {
-
-            if ($this->movieRepository->findByArchiveIdentifier($movie->identifier)) {
-                continue;
-            }
-
-            $candidates = $this->tmdbService->find($movie);
-
-            dump([
-                'archive' => $movie,
-                'candidates' => $candidates,
-            ]);
-        }
     }
 }

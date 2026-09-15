@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\DTOs\{ArchiveMovieDto, CandidateScoredDto};
+use App\DTOs\{ArchiveMovieDto, CandidateScoreDto};
 use App\Enums\CompatibilityLevel;
 
 /**
@@ -39,14 +39,14 @@ class ScorerService
             $score = $titleScore + $yearScore + $descriptionScore;
             $compatibilityLevel = $this->getCompatibilityLevel($score);
 
-            $candidatesScored[] = new CandidateScoredDto(
+            $candidatesScored[] = new CandidateScoreDto(
                 candidate: $candidate,
                 level: $compatibilityLevel,
                 score: $score
             );
         }
 
-        usort($candidatesScored, fn (CandidateScoredDto $a, CandidateScoredDto $b) => $b->score <=> $a->score);
+        usort($candidatesScored, fn (CandidateScoreDto $a, CandidateScoreDto $b) => $b->score <=> $a->score);
 
         return $candidatesScored;
     }
