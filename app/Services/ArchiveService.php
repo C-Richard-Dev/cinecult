@@ -2,22 +2,35 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\Response;
 use App\DTOs\ArchiveMovieDto;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 
 class ArchiveService
 {
-    private $baseUrl;
+    private string $baseUrl;
+
+    private int $connectTimeout;
+
+    private int $timeout;
+
+    private int $requestDelayMs;
 
     public function __construct()
     {
         $this->baseUrl = config('services.archive.url');
+        $this->connectTimeout = config('services.archive.connect_timeout');
+        $this->timeout = config('services.archive.timeout');
+        $this->requestDelayMs = config('services.archive.request_delay_ms');
     }
 
     public function listMovies(int $page = 1, int $rows = 20): array
     {
+        $this->throttle();
+
         $datas = Http::baseUrl($this->baseUrl)
+            ->connectTimeout($this->connectTimeout)
+            ->timeout($this->timeout)
             ->get('/advancedsearch.php', [
                 'q' => 'collection:feature_films_unsorted',
                 'fl' => 'identifier,title,description,year,date,language,creator,subject',
@@ -47,7 +60,11 @@ class ArchiveService
 
     public function getVideoFileName(string $identifier): ?string
     {
+        $this->throttle();
+
         $data = Http::baseUrl($this->baseUrl)
+            ->connectTimeout($this->connectTimeout)
+            ->timeout($this->timeout)
             ->get("/metadata/{$identifier}")
             ->throw()
             ->json();
@@ -59,5 +76,13 @@ class ArchiveService
         }
 
         return null;
+    }
+
+    /**
+     * Waits before sending a new request to avoid overwhelming the Internet Archive API.
+     */
+    private function throttle(): void
+    {
+        Sleep::for($this->requestDelayMs)->milliseconds();
     }
 }
