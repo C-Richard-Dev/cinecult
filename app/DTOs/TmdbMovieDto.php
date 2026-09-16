@@ -9,7 +9,7 @@ class TmdbMovieDto
         public bool $adult,
         public ?string $backdropPath,
         public array $genreIds,
-        public ?string $title,
+        public string $title,
         public ?string $originalLanguage,
         public ?string $originalTitle,
         public ?string $overview,

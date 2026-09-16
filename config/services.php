@@ -37,11 +37,17 @@ return [
 
     'archive' => [
         'url' => env('INTERNET_ARCHIVE_URL', 'https://archive.org'),
+        'connect_timeout' => env('INTERNET_ARCHIVE_CONNECT_TIMEOUT', 3),
+        'timeout' => env('INTERNET_ARCHIVE_TIMEOUT', 10),
+        'request_delay_ms' => env('INTERNET_ARCHIVE_REQUEST_DELAY_MS', 250),
     ],
 
     'tmdb' => [
         'url' => env('TMDB_URL', 'https://api.themoviedb.org/3'),
         'api_key' => env('TMDB_API_KEY', ''),
+        'connect_timeout' => env('TMDB_CONNECT_TIMEOUT', 3),
+        'timeout' => env('TMDB_TIMEOUT', 10),
+        'request_delay_ms' => env('TMDB_REQUEST_DELAY_MS', 250),
     ],
 
 ];
