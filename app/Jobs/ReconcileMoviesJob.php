@@ -24,7 +24,11 @@ class ReconcileMoviesJob implements ShouldQueue
      */
     public function handle(MovieReconciliationEngine $movieReconciliationEngine): void
     {
-        $startPage = max(1, (new ReconciliationRun)->the_last_page_processed);
+        $lastRun = ReconciliationRun::query()->latest('id')->first();
+
+        $startPage = $lastRun?->status === ReconciliationRunStatus::FAILED
+            ? max(1, (int) $lastRun->last_page_processed)
+            : (int) ($lastRun?->last_page_processed ?? 0) + 1;
 
         $run = ReconciliationRun::create([
             'status' => ReconciliationRunStatus::RUNNING,

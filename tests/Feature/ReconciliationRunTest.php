@@ -28,11 +28,11 @@ test('the last page processed returns zero when there are no runs', function () 
     expect((new ReconciliationRun)->the_last_page_processed)->toBe(0);
 });
 
-test('job starts from the last processed page and saves the run as finished', function () {
+test('job resumes from the next page after a finished run and saves the run as finished', function () {
     createRun(ReconciliationRunStatus::FINISHED, 7);
 
     $engine = Mockery::mock(MovieReconciliationEngine::class);
-    $engine->shouldReceive('run')->once()->with(7)->andReturn(10);
+    $engine->shouldReceive('run')->once()->with(8)->andReturn(10);
 
     (new ReconcileMoviesJob)->handle($engine);
 
@@ -53,11 +53,22 @@ test('job starts from the first page when there are no previous runs', function 
     expect(ReconciliationRun::query()->latest('id')->first()->last_page_processed)->toBe(3);
 });
 
+test('job reprocesses the last page when the previous run failed', function () {
+    createRun(ReconciliationRunStatus::FAILED, 4);
+
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(4)->andReturn(6);
+
+    (new ReconcileMoviesJob)->handle($engine);
+
+    expect(ReconciliationRun::query()->latest('id')->first()->last_page_processed)->toBe(6);
+});
+
 test('job saves the run as failed when the engine throws', function () {
     createRun(ReconciliationRunStatus::FINISHED, 4);
 
     $engine = Mockery::mock(MovieReconciliationEngine::class);
-    $engine->shouldReceive('run')->once()->with(4)->andThrow(new RuntimeException('API down'));
+    $engine->shouldReceive('run')->once()->with(5)->andThrow(new RuntimeException('API down'));
 
     try {
         (new ReconcileMoviesJob)->handle($engine);
@@ -69,5 +80,5 @@ test('job saves the run as failed when the engine throws', function () {
     $run = ReconciliationRun::query()->latest('id')->first();
 
     expect($run->status)->toBe(ReconciliationRunStatus::FAILED)
-        ->and($run->last_page_processed)->toBe(4);
+        ->and($run->last_page_processed)->toBe(5);
 });
