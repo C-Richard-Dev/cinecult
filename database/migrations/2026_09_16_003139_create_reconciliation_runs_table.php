@@ -14,9 +14,6 @@ return new class extends Migration
     {
         Schema::create('reconciliation_runs', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->default(ReconciliationRunStatus::RUNNING->value);
-            $table->timestamp('started_at');
-            $table->timestamp('finished_at')->nullable();
             $table->integer('last_page_processed')->default(1);
             $table->timestamps();
         });

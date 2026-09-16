@@ -7,6 +7,7 @@ use App\Actions\Movie\CreatePendingMovie;
 use App\Actions\Movie\ReconcileAutomaticallyMovie;
 use App\Enums\CompatibilityLevel;
 use App\Repositories\MovieRepository;
+use App\Models\ReconciliationRun;
 
 class MovieReconciliationEngine
 {
@@ -24,9 +25,10 @@ class MovieReconciliationEngine
      * Runs the reconciliation starting from the given page and returns
      * the last fully processed page.
      */
-    public function run(int $startPage = 1): int
+    public function run(int $startPage = 1, int $reconciliationRunId): int
     {
         $page = $startPage;
+        $reconciliationRun = ReconciliationRun::query()->find($reconciliationRunId);
 
         do {
             $movies = $this->archiveService->listMovies(page: $page, rows: 100);
@@ -71,6 +73,9 @@ class MovieReconciliationEngine
                 }
             }
 
+            $reconciliationRun->update([
+                'last_page_processed' => $page,
+            ]);
             $page++;
         } while (count($movies) === 100);
 
