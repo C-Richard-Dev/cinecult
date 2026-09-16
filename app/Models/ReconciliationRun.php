@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
     'movies_created',
     'candidates_created',
     'movies_reconciled',
+    'last_page_processed',
 ])]
 class ReconciliationRun extends Model
 {

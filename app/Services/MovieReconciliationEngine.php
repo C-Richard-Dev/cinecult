@@ -20,9 +20,13 @@ class MovieReconciliationEngine
         private CreateCandidate $createCandidate,
     ) {}
 
-    public function run(): void
+    /**
+     * Runs the reconciliation starting from the given page and returns
+     * the last fully processed page.
+     */
+    public function run(int $startPage = 1): int
     {
-        $page = 1;
+        $page = $startPage;
 
         do {
             $movies = $this->archiveService->listMovies(page: $page, rows: 100);
@@ -69,5 +73,7 @@ class MovieReconciliationEngine
 
             $page++;
         } while (count($movies) === 100);
+
+        return $page - 1;
     }
 }

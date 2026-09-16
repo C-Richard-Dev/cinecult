@@ -1,7 +1,9 @@
 <?php
 
 use App\Enums\ReconciliationRunStatus;
+use App\Jobs\ReconcileMoviesJob;
 use App\Models\ReconciliationRun;
+use App\Services\MovieReconciliationEngine;
 
 function createRun(ReconciliationRunStatus $status, int $lastPageProcessed): ReconciliationRun
 {
@@ -24,4 +26,48 @@ test('the last page processed returns the value from the most recent run regardl
 
 test('the last page processed returns zero when there are no runs', function () {
     expect((new ReconciliationRun)->the_last_page_processed)->toBe(0);
+});
+
+test('job starts from the last processed page and saves the run as finished', function () {
+    createRun(ReconciliationRunStatus::FINISHED, 7);
+
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(7)->andReturn(10);
+
+    (new ReconcileMoviesJob)->handle($engine);
+
+    $run = ReconciliationRun::query()->latest('id')->first();
+
+    expect($run->status)->toBe(ReconciliationRunStatus::FINISHED)
+        ->and($run->last_page_processed)->toBe(10)
+        ->and($run->started_at)->not->toBeNull()
+        ->and($run->finished_at)->not->toBeNull();
+});
+
+test('job starts from the first page when there are no previous runs', function () {
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(1)->andReturn(3);
+
+    (new ReconcileMoviesJob)->handle($engine);
+
+    expect(ReconciliationRun::query()->latest('id')->first()->last_page_processed)->toBe(3);
+});
+
+test('job saves the run as failed when the engine throws', function () {
+    createRun(ReconciliationRunStatus::FINISHED, 4);
+
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(4)->andThrow(new RuntimeException('API down'));
+
+    try {
+        (new ReconcileMoviesJob)->handle($engine);
+        $this->fail('Expected RuntimeException to be thrown');
+    } catch (RuntimeException $exception) {
+        expect($exception->getMessage())->toBe('API down');
+    }
+
+    $run = ReconciliationRun::query()->latest('id')->first();
+
+    expect($run->status)->toBe(ReconciliationRunStatus::FAILED)
+        ->and($run->last_page_processed)->toBe(4);
 });
