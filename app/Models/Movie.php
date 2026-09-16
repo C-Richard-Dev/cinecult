@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\MovieReconciliationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
@@ -48,5 +49,24 @@ class Movie extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'category_movies');
+    }
+
+    /**
+     * Pega somente os filmes que foram finalizados e possuem arquivo de vídeo.
+     */
+    public function finishedMovies(Builder $query): Builder
+    {
+        return $query->whereIn('reconciliation_status', [
+                MovieReconciliationStatus::AUTOMATIC, 
+                MovieReconciliationStatus::MANUAL
+            ])->whereNotNull('video_file_name');
+    }
+
+    /**
+     * Pega somente os filmes que estão pendentes de reconciliação.
+     */
+    public function getPendingMovies(Builder $query): Builder
+    {
+        return $query->where('reconciliation_status', MovieReconciliationStatus::PENDING);
     }
 }

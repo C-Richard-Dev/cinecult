@@ -7,7 +7,7 @@ use App\Actions\Movie\CreatePendingMovie;
 use App\Actions\Movie\ReconcileAutomaticallyMovie;
 use App\Enums\CompatibilityLevel;
 use App\Models\ReconciliationRun;
-use App\Repositories\MovieRepository;
+use App\Models\Movie;
 
 class MovieReconciliationEngine
 {
@@ -21,7 +21,6 @@ class MovieReconciliationEngine
 
     public function __construct(
         private ArchiveService $archiveService,
-        private MovieRepository $movieRepository,
         private TmdbService $tmdbService,
         private ScorerService $scorerService,
         private ReconcileAutomaticallyMovie $reconcileAutomaticallyMovie,
@@ -47,7 +46,7 @@ class MovieReconciliationEngine
 
             foreach (array_chunk($movies, 100) as $moviesChunk) {
                 foreach ($moviesChunk as $movie) {
-                    if ($this->movieRepository->findByArchiveIdentifier($movie->identifier)) {
+                    if ($this->findByArchiveIdentifier($movie->identifier)) {
                         continue;
                     }
 
@@ -96,5 +95,10 @@ class MovieReconciliationEngine
         } while (count($movies) === 100 && $page <= $lastPageToProcess);
 
         return $page - 1;
+    }
+
+    public function findByArchiveIdentifier(string $archiveIdentifier): bool
+    {
+        return Movie::where('archive_identifier', $archiveIdentifier)->exists();
     }
 }
