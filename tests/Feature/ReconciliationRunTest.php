@@ -28,11 +28,11 @@ test('the last page processed returns zero when there are no runs', function () 
     expect((new ReconciliationRun)->the_last_page_processed)->toBe(0);
 });
 
-test('job resumes from the next page after a finished run and saves the run as finished', function () {
+test('job resumes from the last processed page and saves the run as finished', function () {
     createRun(ReconciliationRunStatus::FINISHED, 7);
 
     $engine = Mockery::mock(MovieReconciliationEngine::class);
-    $engine->shouldReceive('run')->once()->with(8)->andReturn(10);
+    $engine->shouldReceive('run')->once()->with(7)->andReturn(10);
 
     (new ReconcileMoviesJob)->handle($engine);
 
@@ -64,11 +64,59 @@ test('job reprocesses the last page when the previous run failed', function () {
     expect(ReconciliationRun::query()->latest('id')->first()->last_page_processed)->toBe(6);
 });
 
+test('failed marks the run as finished keeping the interrupted page when the job times out', function () {
+    createRun(ReconciliationRunStatus::FINISHED, 7);
+
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(7)->andReturn(10);
+
+    $job = new ReconcileMoviesJob;
+
+    // Simulates the run being created before the job dies (e.g. timeout).
+    $job->handle($engine);
+
+    $run = ReconciliationRun::query()->latest('id')->first();
+    $run->update(['status' => ReconciliationRunStatus::RUNNING, 'finished_at' => null]);
+
+    $job->failed(null);
+
+    $run->refresh();
+
+    expect($run->status)->toBe(ReconciliationRunStatus::FINISHED)
+        ->and($run->finished_at)->not->toBeNull()
+        ->and($run->last_page_processed)->toBe(7);
+});
+
+test('failed does not override a run already marked as failed by the catch block', function () {
+    $engine = Mockery::mock(MovieReconciliationEngine::class);
+    $engine->shouldReceive('run')->once()->with(1)->andThrow(new RuntimeException('API down'));
+
+    $job = new ReconcileMoviesJob;
+
+    try {
+        $job->handle($engine);
+    } catch (RuntimeException) {
+        //
+    }
+
+    $job->failed(null);
+
+    $run = ReconciliationRun::query()->latest('id')->first();
+
+    expect($run->status)->toBe(ReconciliationRunStatus::FAILED);
+});
+
+test('failed does nothing when no run was created', function () {
+    (new ReconcileMoviesJob)->failed(null);
+
+    expect(ReconciliationRun::query()->count())->toBe(0);
+});
+
 test('job saves the run as failed when the engine throws', function () {
     createRun(ReconciliationRunStatus::FINISHED, 4);
 
     $engine = Mockery::mock(MovieReconciliationEngine::class);
-    $engine->shouldReceive('run')->once()->with(5)->andThrow(new RuntimeException('API down'));
+    $engine->shouldReceive('run')->once()->with(4)->andThrow(new RuntimeException('API down'));
 
     try {
         (new ReconcileMoviesJob)->handle($engine);
@@ -80,5 +128,5 @@ test('job saves the run as failed when the engine throws', function () {
     $run = ReconciliationRun::query()->latest('id')->first();
 
     expect($run->status)->toBe(ReconciliationRunStatus::FAILED)
-        ->and($run->last_page_processed)->toBe(5);
+        ->and($run->last_page_processed)->toBe(4);
 });

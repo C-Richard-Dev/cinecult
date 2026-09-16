@@ -17,9 +17,6 @@ return new class extends Migration
             $table->string('status')->default(ReconciliationRunStatus::RUNNING->value);
             $table->timestamp('started_at');
             $table->timestamp('finished_at')->nullable();
-            $table->integer('movies_created')->default(0);
-            $table->integer('candidates_created')->default(0);
-            $table->integer('movies_reconciled')->default(0);
             $table->integer('last_page_processed')->default(1);
             $table->timestamps();
         });

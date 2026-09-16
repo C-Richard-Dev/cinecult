@@ -10,9 +10,6 @@ use Illuminate\Database\Eloquent\Model;
     'status',
     'started_at',
     'finished_at',
-    'movies_created',
-    'candidates_created',
-    'movies_reconciled',
     'last_page_processed',
 ])]
 class ReconciliationRun extends Model
