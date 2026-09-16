@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\ArchiveMovieDto;
 use App\DTOs\TmdbMovieDto;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 
 class TmdbService
 {
@@ -12,16 +13,29 @@ class TmdbService
 
     private string $apiKey;
 
+    private int $connectTimeout;
+
+    private int $timeout;
+
+    private int $requestDelayMs;
+
     public function __construct()
     {
         $this->baseUrl = config('services.tmdb.url');
         $this->apiKey = config('services.tmdb.api_key') ?? '';
+        $this->connectTimeout = config('services.tmdb.connect_timeout');
+        $this->timeout = config('services.tmdb.timeout');
+        $this->requestDelayMs = config('services.tmdb.request_delay_ms');
     }
 
     public function testConnection(): array
     {
+        $this->throttle();
+
         try {
             $response = Http::baseUrl($this->baseUrl)
+                ->connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
                 ->get('/search/movie', [
                     'api_key' => $this->apiKey,
                     'query' => 'The Matrix',
@@ -54,12 +68,16 @@ class TmdbService
 
     public function find(ArchiveMovieDto $movie): array
     {
+        $this->throttle();
+
         $params = array_filter([
             'api_key' => $this->apiKey,
             'query' => $movie->title,
         ], fn ($value) => $value !== null && $value !== false && $value !== '');
 
         $response = Http::baseUrl($this->baseUrl)
+            ->connectTimeout($this->connectTimeout)
+            ->timeout($this->timeout)
             ->get('/search/movie', $params)
             ->throw();
 
@@ -82,5 +100,13 @@ class TmdbService
             ),
             $response->json('results') ?? []
         );
+    }
+
+    /**
+     * Waits before sending a new request to avoid overwhelming the TMDB API.
+     */
+    private function throttle(): void
+    {
+        Sleep::for($this->requestDelayMs)->milliseconds();
     }
 }
